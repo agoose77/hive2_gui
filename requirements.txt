@@ -1,0 +1,4 @@
+PyQt5
+pygments
+hive2
+qdarkstyle
