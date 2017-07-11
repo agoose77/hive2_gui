@@ -164,13 +164,14 @@ class HiveNodeInspector:
         """
         wrapper_options = OrderedDict()
 
-        for arg_name, param in wrapper._items:
+        for arg_name, param in wrapper:
             data_type = param.data_type if param.data_type else ''
             options = param.options
 
             # If default is defined
             default = param.start_value
-            if default is param.NoValue:
+
+            if default is param.no_value:
                 option = InspectorOption(data_type, options=options)
 
             else:

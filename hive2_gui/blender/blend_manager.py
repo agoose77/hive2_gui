@@ -1,13 +1,13 @@
+import dragonfly
+import sparta
 import test.sca as test_sca
 from bpy import app, data, types, props
 
-import dragonfly
-import sparta
+from finders.hives import get_hives
 from .gui_node_manager import BlenderGUINodeManager
 from .node_menu_manager import node_menu_manager, HiveNodeMenu
 from .text_area import BlenderTextAreaManager
 from .types import HiveNodeTree
-from ..finder import get_hives
 from ..node_manager import NodeManager
 
 hives = get_hives(test_sca, dragonfly, sparta)

@@ -10,6 +10,7 @@ from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import (QMainWindow, QStatusBar, QAction, QDialog, QMessageBox, QFileDialog, QCompleter, QLineEdit,
                              QHBoxLayout, QMenu, QDockWidget, QLabel)
 
+from ..finders import all_bees, HiveFinder
 from .debugging import QtNetworkDebugManager
 from .node_editor import NodeEditorSpace
 from .tabs import TabViewWidget
@@ -17,7 +18,6 @@ from .tree import TreeWidget
 from .utils import ContextAdaptor
 from .web_view import QEditorWebView
 from .. import tools
-from ..finder import all_bees, HiveFinder
 from ..importer import clear_imported_hivemaps, sys_path_add_context, module_is_hivemap
 from ..node import NodeTypes
 from ..utils import find_file_path_of_hive_path

@@ -1,6 +1,6 @@
 import ast
 import hive
-from hive.interfaces import Antenna, Output, TriggerSource, TriggerTarget
+from hive.interfaces import Antenna, Output, TriggerSource, TriggerTarget, IOModes
 # IO public
 
 
@@ -128,17 +128,17 @@ def get_io_info(hive_object):
 
     pin_order = []
 
-    for bee_name, bee in external_bees._items:
+    for bee_name, bee in external_bees:
         # Find IO pins
         if bee.implements(Antenna):
             storage_target = inputs
             data_type = bee.data_type
-            mode = bee.mode
+            mode = "push" if bee.mode == IOModes.PUSH else "pull"
 
         elif bee.implements(Output):
             storage_target = outputs
             data_type = bee.data_type
-            mode = bee.mode
+            mode = "push" if bee.mode == IOModes.PUSH else "pull"
 
         elif isinstance(bee, TriggerSource):
             storage_target = outputs

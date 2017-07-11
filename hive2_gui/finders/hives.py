@@ -8,12 +8,8 @@ import dragonfly
 import hive
 
 
-GUI_CONF_FILENAME = "robots.txt"
-
 _hive_lib_dir = os.path.dirname(dragonfly.__path__[0])
-all_bees = ['hive.attribute', 'hive.antenna', 'hive.output', 'hive.entry', 'hive.hook', 'hive.triggerfunc',
-            'hive.modifier', 'hive.pull_in', 'hive.pull_out', 'hive.push_in', 'hive.push_out']
-
+GUI_CONF_FILENAME = "robots.txt"
 FinderPathElement = namedtuple("FinderPathElement", "name file_path")
 
 

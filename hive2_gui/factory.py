@@ -48,6 +48,8 @@ class BeeNodeFactory:
         return node
 
     def build_attribute(self, node):
+        node.add_output("pre_updated", 'trigger', 'push')
+        node.add_output("updated", 'trigger', 'push')
         return node
 
     def build_pull_in(self, node):
@@ -100,6 +102,8 @@ class BeeNodeFactory:
 
     def build_modifier(self, node):
         node.add_input("trigger", 'trigger', "push")
+        node.add_output("pre_triggered", 'trigger', 'push')
+        node.add_output("triggered", 'trigger', 'push')
 
         return node
 

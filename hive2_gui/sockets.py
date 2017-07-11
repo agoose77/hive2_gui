@@ -41,7 +41,6 @@ def get_colour(data_type):
     except KeyError:
         pass
 
-
     return _colours[10]
 
 
