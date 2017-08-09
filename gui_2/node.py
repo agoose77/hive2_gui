@@ -10,7 +10,7 @@ from .field import Field
 
 class NodeHeader(QGraphicsWidget):
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__()
 
         layout = QGraphicsLinearLayout(Qt.Vertical)
@@ -80,7 +80,7 @@ class Node(QGraphicsWidget):
 
         self._roundness = 2
 
-    def addField(self, name: str, io_mode: IOMode):
+    def addField(self, name: str, io_mode: IOMode) -> Field:
         field = Field(name, io_mode)
         self.layout().addItem(field)
         return field

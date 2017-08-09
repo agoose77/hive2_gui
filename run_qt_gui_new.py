@@ -38,23 +38,22 @@ if __name__ == "__main__":
     view.show()
 
     node = Node("drone")
-    f = node.addField("score.pull_out", IOMode.OUTPUT)
-    r = f.addRow("pre_triggered")
-    r.socket().setColor(Colours.red)
-    r.socket().setFancyShading(True)
-    l=r.labelProxy().widget()
+    score_out = node.addField("score.pull_out", IOMode.OUTPUT)
 
-    from PyQt5.QtGui import QFontMetrics as M
-    print(M(l.font()).boundingRect(l.text()).width())
-    ff =  l.font()
-    ff.setPointSize(12)
-    l.setFont(ff)
-    r.labelProxy().updateGeometry()
-    # print(M(l.font()).boundingRect(l.text()))
-    f.updateRowGeometries()
+    out_pre_trig = score_out.addRow("pre_triggered")
+    out_pre_trig.socket().setColor(Colours.red)
+    out_pre_trig.socket().setFancyShading(True)
+
+    new_font = out_pre_trig.label().font()
+    new_font.setPointSize(12)
+    out_pre_trig.label().setFont(new_font)
+
+    score_out.updateRowGeometries()
 
     node.addField("print_score", IOMode.INPUT)
     view.scene().addItem(node)
+    out_pre_trig = score_out.addRow("triggered")
+
 
     # Enter Qt application main loop
     view.move(400,200)

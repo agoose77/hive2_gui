@@ -1,65 +1,20 @@
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPalette, QColor, QFontMetrics
 from PyQt5.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QGraphicsProxyWidget, QLabel, \
-    QGraphicsDropShadowEffect
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtGui import QPalette, QColor, QFont, QPainterPath, QPen, QBrush, QFontMetrics
+    QGraphicsDropShadowEffect, QGraphicsLayout, QGraphicsLayoutItem
+
 from .colours import Colours
 from .enums import IOMode
+from .socket import Socket
 
+from typing import Iterator
 
-def iter_layout(layout):
+def iter_layout(layout: QGraphicsLayout) -> Iterator[QGraphicsLayoutItem]:
     for i in range(layout.count()):
         yield layout.itemAt(i)
 
 
-class Socket(QGraphicsWidget):
-
-    def __init__(self, parent, colour: QColor, fancy_shading: bool=False):
-        super().__init__(parent)
-
-        self._color = colour
-        self._fancyShading = fancy_shading
-        self._userData = None
-
-    def color(self):
-        return self._color
-
-    def setColor(self, color):
-        self._color = color
-
-    def userData(self):
-        return self._userData
-
-    def setUserData(self):
-        return self._userData
-
-    def fancyShading(self):
-        return self._fancyShading
-
-    def setFancyShading(self, shading):
-        self._fancyShading = shading
-
-    def mousePressEvent(self, *args, **kwargs):
-        print("PRINT",self.parentItem()._name)
-
-    def boundingRect(self):
-        size = 16
-        return QRectF(0, 0, size, size)
-
-    def paint(self, painter, option, widget):
-        brush = QBrush(self._color)
-        pen = QPen(Qt.NoPen)
-
-        painter.setBrush(brush)
-        painter.setPen(pen)
-        painter.drawEllipse(self.boundingRect())
-
-        if self._fancyShading:
-            painter.setBrush(painter.brush().color().darker(130))
-            painter.drawChord(self.boundingRect(), 0 * 16, 180 * 16)
-
-
 class FieldRow(QGraphicsWidget):
-
     def __init__(self, name: str, ioMode: IOMode):
         super().__init__()
 
@@ -91,21 +46,20 @@ class FieldRow(QGraphicsWidget):
         dropShadowEffect.setBlurRadius(0)
         dropShadowEffect.setOffset(1.0, 1.0)
         self._labelProxy.setGraphicsEffect(dropShadowEffect)
-        # layout.addItem(self._labelProxy)
 
         # Add socket to connect to
         self._socket = Socket(self, Colours.red)
 
-    def labelProxy(self):
-        return self._labelProxy
+    def label(self) -> QLabel:
+        return self._nameLabel
 
-    def labelWidth(self):
+    def labelWidth(self) -> int:
         return QFontMetrics(self._nameLabel.font()).width(self._nameLabel.text())
 
-    def socket(self):
+    def socket(self) -> Socket:
         return self._socket
 
-    def updateLayout(self, max_label_width):
+    def updateLayout(self, max_label_width: int):
         """Update layout such that socket and label are correctly positioned for a given row width derived from
         longest label length
 
@@ -131,11 +85,11 @@ class FieldRow(QGraphicsWidget):
         # Find socket position
         if self._ioMode == IOMode.OUTPUT:
             socket_pos_x = padding + max_label_width + padding
-            label_pos_x = row_width - socket_width/2 - padding - label_width
+            label_pos_x = row_width - socket_width / 2 - padding - label_width
 
         else:
-            socket_pos_x = -socket_width/2
-            label_pos_x = socket_width/2 + padding
+            socket_pos_x = -socket_width / 2
+            label_pos_x = socket_width / 2 + padding
 
         label.setPos(label_pos_x, 0)
         socket.setPos(socket_pos_x, socket_pos_y)
@@ -145,32 +99,35 @@ class FieldRow(QGraphicsWidget):
 
 
 class Field(QGraphicsWidget):
-
     def __init__(self, name: str, io_mode: IOMode):
         super().__init__()
 
         self._ioMode = io_mode
 
         layout = QGraphicsLinearLayout(Qt.Vertical)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0.0)
         self.setLayout(layout)
 
-        self._rootRow = self.addRow(name)
-        p = self._rootRow.palette()
-        p.setColor(QPalette.Window, Colours.orange)
-        self._rootRow.setPalette(p)
+        self._rootRow = self._createRootRow(name)
 
-    def addRow(self, name):
+    def _createRootRow(self, name: str) -> FieldRow:
+        row = self.addRow(name)
+        palette = row.palette()
+        palette.setColor(QPalette.Window, Colours.orange)
+        row.setPalette(palette)
+        return row
+
+    def addRow(self, name: str) -> FieldRow:
         row = FieldRow(name, self._ioMode)
         self.layout().addItem(row)
         self.updateRowGeometries()
         return row
 
-    def name(self):
+    def name(self) -> str:
         return self._nameLabel.text()
 
-    def setName(self, name):
+    def setName(self, name: str):
         self._nameLabel.setText(name)
 
     def updateRowGeometries(self):
