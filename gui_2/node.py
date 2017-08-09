@@ -83,6 +83,7 @@ class Node(QGraphicsWidget):
     def addField(self, name: str, io_mode: IOMode):
         field = Field(name, io_mode)
         self.layout().addItem(field)
+        return field
 
     def paint(self, painter, option, widget):
         shape = QPainterPath()

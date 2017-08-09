@@ -1,9 +1,14 @@
 from PyQt5.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QGraphicsProxyWidget, QLabel, \
     QGraphicsDropShadowEffect
 from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtGui import QPalette, QColor, QFont, QPainterPath, QPen, QBrush
+from PyQt5.QtGui import QPalette, QColor, QFont, QPainterPath, QPen, QBrush, QFontMetrics
 from .colours import Colours
 from .enums import IOMode
+
+
+def iter_layout(layout):
+    for i in range(layout.count()):
+        yield layout.itemAt(i)
 
 
 class Socket(QGraphicsWidget):
@@ -13,6 +18,7 @@ class Socket(QGraphicsWidget):
 
         self._color = colour
         self._fancyShading = fancy_shading
+        self._userData = None
 
     def color(self):
         return self._color
@@ -20,11 +26,20 @@ class Socket(QGraphicsWidget):
     def setColor(self, color):
         self._color = color
 
+    def userData(self):
+        return self._userData
+
+    def setUserData(self):
+        return self._userData
+
     def fancyShading(self):
         return self._fancyShading
 
     def setFancyShading(self, shading):
         self._fancyShading = shading
+
+    def mousePressEvent(self, *args, **kwargs):
+        print("PRINT",self.parentItem()._name)
 
     def boundingRect(self):
         size = 16
@@ -43,13 +58,15 @@ class Socket(QGraphicsWidget):
             painter.drawChord(self.boundingRect(), 0 * 16, 180 * 16)
 
 
-class SubField(QGraphicsWidget):
+class FieldRow(QGraphicsWidget):
 
     def __init__(self, name: str, ioMode: IOMode):
         super().__init__()
 
         self._ioMode = ioMode
         self._name = name
+
+        self._padding = 4
 
         # BG styling
         palette = QPalette()
@@ -62,7 +79,7 @@ class SubField(QGraphicsWidget):
 
         # Set label font size
         label_font = self._nameLabel.font()
-        label_font.setPointSize(15)
+        label_font.setPointSize(18)
         self._nameLabel.setFont(label_font)
 
         self._labelProxy = QGraphicsProxyWidget(self)
@@ -78,78 +95,86 @@ class SubField(QGraphicsWidget):
 
         # Add socket to connect to
         self._socket = Socket(self, Colours.red)
-        self.updateLayout()
 
-    def updateLayout(self):
-        self._spacerConstant = 4
+    def labelProxy(self):
+        return self._labelProxy
+
+    def labelWidth(self):
+        return QFontMetrics(self._nameLabel.font()).width(self._nameLabel.text())
+
+    def socket(self):
+        return self._socket
+
+    def updateLayout(self, max_label_width):
+        """Update layout such that socket and label are correctly positioned for a given row width derived from
+        longest label length
+
+        :param max_label_width: width of longest label
+        """
         label = self._labelProxy
-        height = label.boundingRect().height()
         socket = self._socket
+        padding = self._padding
 
-        print(label.boundingRect().width(),
-              self.boundingRect().width())
+        label_width = self.labelWidth()
+        assert abs(max_label_width - label_width) > -1e-3
+
+        label_height = label.boundingRect().height()
+
+        socket_width = socket.boundingRect().width()
+        socket_height = socket.boundingRect().height()
+
+        socket = self._socket
+        socket_pos_y = (label_height - socket_height) / 2.0
+
+        row_width = socket_width / 2 + padding + max_label_width + padding
+
+        # Find socket position
         if self._ioMode == IOMode.OUTPUT:
-            hook_y_pos = (height - socket.boundingRect().height()) / 2.0
-
+            socket_pos_x = padding + max_label_width + padding
+            label_pos_x = row_width - socket_width/2 - padding - label_width
 
         else:
-            hook_y_pos = (height - socket.boundingRect().height()) / 2.0
-            socket.setPos(0.0, hook_y_pos)
+            socket_pos_x = -socket_width/2
+            label_pos_x = socket_width/2 + padding
 
-        input_width = self._spacerConstant * 2.0
-        label.setPos(input_width + self._spacerConstant, 0)
+        label.setPos(label_pos_x, 0)
+        socket.setPos(socket_pos_x, socket_pos_y)
 
-        if self._ioMode == IOMode.OUTPUT:
-            socket.setPos(label.pos().x() + label.boundingRect().width() + self._spacerConstant,
-                        hook_y_pos)
+        self.resize(row_width, label_height)
+        self.setPreferredSize(row_width, label_height)
 
-            self.resize(socket.pos().x() + socket.boundingRect().width(), height)
-
-        else:
-            self.resize(label.pos().x() + label.boundingRect().width(), height)
 
 class Field(QGraphicsWidget):
 
     def __init__(self, name: str, io_mode: IOMode):
         super().__init__()
 
+        self._ioMode = io_mode
+
         layout = QGraphicsLinearLayout(Qt.Vertical)
         layout.setContentsMargins(0,0,0,0)
         layout.setSpacing(0.0)
         self.setLayout(layout)
 
-        # Title label
-        self._nameLabel = QLabel(name)
-        self._nameLabel.setAlignment(Qt.AlignRight if io_mode == IOMode.OUTPUT else Qt.AlignLeft)
-        self._nameLabel.setStyleSheet("QLabel {background-color: rgba(0,0,0,0);}")
+        self._rootRow = self.addRow(name)
+        p = self._rootRow.palette()
+        p.setColor(QPalette.Window, Colours.orange)
+        self._rootRow.setPalette(p)
 
-        # Set label font size
-        font = self._nameLabel.font()
-        font.setPointSize(20)
-        self._nameLabel.setFont(font)
+    def addRow(self, name):
+        row = FieldRow(name, self._ioMode)
+        self.layout().addItem(row)
+        self.updateRowGeometries()
+        return row
 
-        # Add padding to label
-        padding = 6
-        self._nameLabel.setContentsMargins(padding, padding, padding, padding)
+    def name(self):
+        return self._nameLabel.text()
 
-        label_proxy = QGraphicsProxyWidget()
-        label_proxy.setWidget(self._nameLabel)
+    def setName(self, name):
+        self._nameLabel.setText(name)
 
-        # Drop shadow
-        dropShadowEffect = QGraphicsDropShadowEffect(self)
-        dropShadowEffect.setColor(QColor(0, 0, 0, 50))
-        dropShadowEffect.setBlurRadius(0)
-        dropShadowEffect.setOffset(1.0, 1.0)
-        label_proxy.setGraphicsEffect(dropShadowEffect)
+    def updateRowGeometries(self):
+        max_label_with = max(r.labelWidth() for r in iter_layout(self.layout()))
 
-        layout.addItem(label_proxy)
-
-        palette = QPalette()
-        palette.setColor(QPalette.Window, Colours.orange)
-        self.setPalette(palette)
-        self.setAutoFillBackground(True)
-
-        sub_rows = ["pre_triggered", "triggered"]
-        for row in sub_rows:
-            field = SubField(row, io_mode)
-            layout.addItem(field)
+        for row in iter_layout(self.layout()):
+            row.updateLayout(max_label_with)
