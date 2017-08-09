@@ -1,4 +1,6 @@
-from PyQt5.QtCore import Qt
+from typing import Iterator
+
+from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtGui import QPalette, QColor, QFontMetrics
 from PyQt5.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QGraphicsProxyWidget, QLabel, \
     QGraphicsDropShadowEffect, QGraphicsLayout, QGraphicsLayoutItem
@@ -6,12 +8,7 @@ from PyQt5.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QGraphicsPro
 from .colours import Colours
 from .enums import IOMode
 from .socket import Socket
-
-from typing import Iterator
-
-def iter_layout(layout: QGraphicsLayout) -> Iterator[QGraphicsLayoutItem]:
-    for i in range(layout.count()):
-        yield layout.itemAt(i)
+from .tools import iter_layout
 
 
 class FieldRow(QGraphicsWidget):
@@ -34,7 +31,7 @@ class FieldRow(QGraphicsWidget):
 
         # Set label font size
         label_font = self._nameLabel.font()
-        label_font.setPointSize(18)
+        label_font.setPointSize(13)
         self._nameLabel.setFont(label_font)
 
         self._labelProxy = QGraphicsProxyWidget(self)
@@ -53,8 +50,8 @@ class FieldRow(QGraphicsWidget):
     def label(self) -> QLabel:
         return self._nameLabel
 
-    def labelWidth(self) -> int:
-        return QFontMetrics(self._nameLabel.font()).width(self._nameLabel.text())
+    def labelBoundingRect(self) -> QRect:
+        return QFontMetrics(self._nameLabel.font()).boundingRect(self._nameLabel.text())
 
     def socket(self) -> Socket:
         return self._socket
@@ -69,10 +66,11 @@ class FieldRow(QGraphicsWidget):
         socket = self._socket
         padding = self._padding
 
-        label_width = self.labelWidth()
+        label_rect = self.labelBoundingRect()
+        label_width = label_rect.width()
         assert abs(max_label_width - label_width) > -1e-3
 
-        label_height = label.boundingRect().height()
+        label_height = label_rect.height()
 
         socket_width = socket.boundingRect().width()
         socket_height = socket.boundingRect().height()
@@ -112,14 +110,20 @@ class Field(QGraphicsWidget):
         self._rootRow = self._createRootRow(name)
 
     def _createRootRow(self, name: str) -> FieldRow:
-        row = self.addRow(name)
+        row = self.addRow(name, 16)
         palette = row.palette()
         palette.setColor(QPalette.Window, Colours.orange)
         row.setPalette(palette)
         return row
 
-    def addRow(self, name: str) -> FieldRow:
+    def addRow(self, name: str, font_size: int=None) -> FieldRow:
         row = FieldRow(name, self._ioMode)
+
+        if font_size is not None:
+            font = row.label().font()
+            font.setPointSize(font_size)
+            row.label().setFont(font)
+
         self.layout().addItem(row)
         self.updateRowGeometries()
         return row
@@ -131,7 +135,7 @@ class Field(QGraphicsWidget):
         self._nameLabel.setText(name)
 
     def updateRowGeometries(self):
-        max_label_with = max(r.labelWidth() for r in iter_layout(self.layout()))
+        max_label_with = max(r.labelBoundingRect().width() for r in iter_layout(self.layout()))
 
         for row in iter_layout(self.layout()):
             row.updateLayout(max_label_with)

@@ -101,6 +101,7 @@ class HiveFinder:
 
             names_to_module = names_from_root + (name,)
             import_path = '.'.join(names_to_module)
+            print(import_path)
 
             # Although modules can be imported using __import__ or importlib.import_module with non-identifier names
             # It is not safe and breaks the code generator

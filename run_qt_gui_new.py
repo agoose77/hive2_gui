@@ -12,7 +12,11 @@ from qdarkstyle import load_stylesheet_pyqt5
 if __name__ == "__main__":
     # Create a Qt application
     app = QApplication(sys.argv)
-    app.setStyleSheet(load_stylesheet_pyqt5())
+    style_sheet = load_stylesheet_pyqt5()
+    style_sheet += """
+    
+    """
+    app.setStyleSheet(style_sheet)
 
     label_font = QFont()
     label_font.setFamily("Roboto Condensed")
@@ -43,11 +47,7 @@ if __name__ == "__main__":
     out_pre_trig = score_out.addRow("pre_triggered")
     out_pre_trig.socket().setColor(Colours.red)
     out_pre_trig.socket().setFancyShading(True)
-
-    new_font = out_pre_trig.label().font()
-    new_font.setPointSize(12)
-    out_pre_trig.label().setFont(new_font)
-
+    out_pre_trig.socket().setToolTip("Jack and the")
     score_out.updateRowGeometries()
 
     node.addField("print_score", IOMode.INPUT)

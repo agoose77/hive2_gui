@@ -1,7 +1,7 @@
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QPainterPath, QPen, QBrush
 from PyQt5.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QGraphicsProxyWidget, QLabel, \
     QGraphicsDropShadowEffect
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPalette, QColor, QFont, QPainterPath, QPen, QBrush
 
 from .colours import Colours
 from .enums import IOMode
@@ -9,7 +9,6 @@ from .field import Field
 
 
 class NodeHeader(QGraphicsWidget):
-
     def __init__(self, name: str):
         super().__init__()
 
@@ -58,12 +57,11 @@ class NodeHeader(QGraphicsWidget):
 
 
 class Node(QGraphicsWidget):
-
     def __init__(self, name: str):
         super().__init__()
 
         layout = QGraphicsLinearLayout(Qt.Vertical)
-        layout.setContentsMargins(0,0,0,0)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
         header = NodeHeader(name)
@@ -84,6 +82,9 @@ class Node(QGraphicsWidget):
         field = Field(name, io_mode)
         self.layout().addItem(field)
         return field
+
+    def fields(self):
+        return self.layout().items
 
     def paint(self, painter, option, widget):
         shape = QPainterPath()
