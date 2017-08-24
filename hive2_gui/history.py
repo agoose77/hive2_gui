@@ -204,14 +204,13 @@ class CommandLog:
             del self._commands[self._index + 1:]
             latest_command = self._commands[-1]
 
-            logger.info(f"Commands after {latest_command} have been lost due to an add command:\n{command!r}")
+            logger.info(f"Commands after {latest_command!r} have been lost due to an add command {command!r}")
 
         self._commands.append(command)
-        self._index += 1
 
         # Limit length to a maximum number of operations
         if len(self._commands) > self._limit:
-            # Assume everything atomic, hence only one command to displace
-            # Index must be at end, if command list has grown
-            self._index -= 1
             del self._commands[0]
+
+        else:
+            self._index += 1
