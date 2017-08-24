@@ -226,7 +226,7 @@ class NodeEditorSpace(QMainWindow):
         self.setDockNestingEnabled(True)
         self.setCentralWidget(self._view)
 
-        # Node manager to view
+        # NodeWidget manager to view
         node_manager = self._nodeManager
         node_manager.on_node_created.subscribe(self._onNodeCreated)
         node_manager.on_node_destroyed.subscribe(self._onNodeDestroyed)
@@ -241,7 +241,7 @@ class NodeEditorSpace(QMainWindow):
         self._historyID = self._history.command_id
         self._lastSavedID = self._historyID
 
-        # View to node manager
+        # NodeView to node manager
         view = self._view
         view.onNodesMoved.connect(self._guiNodesMoved)
         view.onNodesDeleted.connect(self._guiNodesDestroyed)
@@ -775,7 +775,7 @@ class NodeEditorSpace(QMainWindow):
     def _checkForCyclicReferences(self, file_path):
         node_manager = self._nodeManager
 
-        # Check that we aren't attempting to save-as a hivemap of an existing Node instance
+        # Check that we aren't attempting to save-as a hivemap of an existing NodeWidget instance
         if not os.path.exists(file_path):
             return False
 
@@ -807,7 +807,7 @@ class NodeEditorSpace(QMainWindow):
 
                 else:
                     if hivemap_file_path == self._filePath:
-                        QMessageBox.critical(self, 'Cyclic Hive', "This Hive Node cannot be added to its own hivemap")
+                        QMessageBox.critical(self, 'Cyclic Hive', "This Hive NodeWidget cannot be added to its own hivemap")
                         return
 
         params = self._displayModalInspector(inspection_generator)

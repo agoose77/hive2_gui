@@ -1,17 +1,17 @@
 from typing import Iterator
 
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, pyqtSignal, QObject
 from PyQt5.QtGui import QPalette, QColor, QFontMetrics
 from PyQt5.QtWidgets import QGraphicsWidget, QGraphicsLinearLayout, QGraphicsProxyWidget, QLabel, \
-    QGraphicsDropShadowEffect, QGraphicsLayout, QGraphicsLayoutItem
+    QGraphicsDropShadowEffect, QGraphicsLayout, QGraphicsLayoutItem, QLayoutItem
 
 from .colours import Colours
 from .enums import IOMode
-from .socket import Socket
+from .socket import SocketWidget
 from .tools import iter_layout
 
 
-class FieldRow(QGraphicsWidget):
+class FieldRowWidget(QGraphicsWidget):
     def __init__(self, name: str, ioMode: IOMode):
         super().__init__()
 
@@ -45,7 +45,7 @@ class FieldRow(QGraphicsWidget):
         self._labelProxy.setGraphicsEffect(dropShadowEffect)
 
         # Add socket to connect to
-        self._socket = Socket(self, Colours.red)
+        self._socket = SocketWidget(self, Colours.red)
 
     def label(self) -> QLabel:
         return self._nameLabel
@@ -53,7 +53,7 @@ class FieldRow(QGraphicsWidget):
     def labelBoundingRect(self) -> QRect:
         return QFontMetrics(self._nameLabel.font()).boundingRect(self._nameLabel.text())
 
-    def socket(self) -> Socket:
+    def socket(self) -> SocketWidget:
         return self._socket
 
     def updateLayout(self, max_label_width: int):
@@ -96,7 +96,7 @@ class FieldRow(QGraphicsWidget):
         self.setPreferredSize(row_width, label_height)
 
 
-class Field(QGraphicsWidget):
+class FieldWidget(QGraphicsWidget):
     def __init__(self, name: str, io_mode: IOMode):
         super().__init__()
 
@@ -109,15 +109,15 @@ class Field(QGraphicsWidget):
 
         self._rootRow = self._createRootRow(name)
 
-    def _createRootRow(self, name: str) -> FieldRow:
+    def _createRootRow(self, name: str) -> FieldRowWidget:
         row = self.addRow(name, 16)
         palette = row.palette()
         palette.setColor(QPalette.Window, Colours.orange)
         row.setPalette(palette)
         return row
 
-    def addRow(self, name: str, font_size: int=None) -> FieldRow:
-        row = FieldRow(name, self._ioMode)
+    def addRow(self, name: str, font_size: int=None) -> FieldRowWidget:
+        row = FieldRowWidget(name, self._ioMode)
 
         if font_size is not None:
             font = row.label().font()
@@ -125,7 +125,7 @@ class Field(QGraphicsWidget):
             row.label().setFont(font)
 
         self.layout().addItem(row)
-        self.updateRowGeometries()
+        self._updateRowGeometries()
         return row
 
     def name(self) -> str:
@@ -134,7 +134,7 @@ class Field(QGraphicsWidget):
     def setName(self, name: str):
         self._nameLabel.setText(name)
 
-    def updateRowGeometries(self):
+    def _updateRowGeometries(self):
         max_label_with = max(r.labelBoundingRect().width() for r in iter_layout(self.layout()))
 
         for row in iter_layout(self.layout()):

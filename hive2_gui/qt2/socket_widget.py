@@ -3,7 +3,7 @@ from PyQt5.QtGui import QColor, QPen, QBrush
 from PyQt5.QtWidgets import QGraphicsWidget
 
 
-class Socket(QGraphicsWidget):
+class SocketWidget(QGraphicsWidget):
     def __init__(self, parent, colour: QColor, fancy_shading: bool = False):
         super().__init__(parent)
 

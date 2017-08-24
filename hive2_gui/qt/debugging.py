@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QObject, QEvent
 from PyQt5.QtWidgets import QApplication
 
-from ..debugging.network import NetworkDebugManager
+from .._debugging.network import NetworkDebugManager
 
 
 class QtNetworkDebugManager(NetworkDebugManager):

@@ -9,8 +9,8 @@ from .scene import Scene
 SELECT_SIZE = 10
 
 
-class View(QGraphicsView):
-    MOUSE_STEPS = 10
+class NodeView(QGraphicsView):
+    _stepsPerWheelEvent = 10
 
     def __init__(self, parent=None):
         QGraphicsView.__init__(self, parent)
@@ -37,12 +37,17 @@ class View(QGraphicsView):
         self.setScene(scene)
         self.setDragMode(QGraphicsView.RubberBandDrag)
 
-    @property
     def mouse_pos(self):
         cursor_pos = QCursor.pos()
         origin = self.mapFromGlobal(cursor_pos)
         scene_pos = self.mapToScene(origin)
         return scene_pos.x(), scene_pos.y()
+
+    def stepsPerWheelEvent(self):
+        return self._stepsPerWheelEvent
+
+    def setStepsPerWheelEvent(self, steps):
+        self._stepsPerWheelEvent = steps
 
     def _onBackspaceKey(self):
         self._onDelKey()
@@ -115,7 +120,7 @@ class View(QGraphicsView):
 
     def wheelEvent(self, event):
         degrees = event.angleDelta() / 8
-        steps = degrees / self.MOUSE_STEPS
+        steps = degrees / self._stepsPerWheelEvent
         self.setZoom(self.zoom() + self._zoomIncrement * steps.y())
 
     def keyPressEvent(self, event):

@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import Qt
 
 from qdarkstyle import load_stylesheet_pyqt5
-from hive2_gui.qt.main_window import MainWindow
+from hive2_gui.qt2.main_window import MainWindow
 
 
 if __name__ == "__main__":

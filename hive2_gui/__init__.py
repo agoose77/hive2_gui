@@ -1,8 +1,7 @@
 import logging.config
 
-from .importer import install_hook, uninstall_hook, get_hook
-
-install_hook()
+# from .importer import install_hook, uninstall_hook, get_hook
+# install_hook()
 
 logging_config = {
     'version': 1,

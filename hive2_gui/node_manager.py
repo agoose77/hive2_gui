@@ -1,4 +1,4 @@
-import logging
+from logging import getLogger
 from keyword import iskeyword
 
 from .code_generator import parameter_group_array_to_dict, parameter_group_dict_to_array
@@ -12,6 +12,11 @@ from .observer import Observable
 from .utils import start_value_from_type, is_identifier, camelcase_to_underscores
 
 from hive import validate_external_name
+
+
+# TODO node manager should just be a controller over a "hivemap" model
+
+logger = getLogger(__name__)
 
 
 def _sanitise_node_name(variable_name):
@@ -67,7 +72,8 @@ class NodeConnectionError(Exception):
     pass
 
 
-class NodeManager(object):
+class NodeManager:
+    """Controller of node system state"""
 
     on_node_created = Observable()
     on_node_destroyed = Observable()
@@ -81,7 +87,7 @@ class NodeManager(object):
     on_pin_folded = Observable()
     on_pin_unfolded = Observable()
 
-    def __init__(self, history, logger=None):
+    def __init__(self, history):
         if history is None:
             history = CommandLogManager()
 
@@ -95,16 +101,6 @@ class NodeManager(object):
 
         self.docstring = ""
         self.nodes = {}
-
-        if logger is None:
-            logger = logging.getLogger(repr(self))
-            handler = logging.StreamHandler()
-            formatter = logging.Formatter('%(levelname)s: %(message)s')
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-            logger.setLevel(logging.INFO)
-
-        self._logger = logger
 
     def _unique_name_from_reference_path(self, reference_path):
         obj_name = reference_path.split(".")[-1]
@@ -132,7 +128,7 @@ class NodeManager(object):
         output_pin = connection.output_pin
         input_pin = connection.input_pin
 
-        self._logger.info("Created connection between {}.{} and {}.{}"
+        logger.info("Created connection between {}.{} and {}.{}"
                           .format(output_pin.node, output_pin.name, input_pin.node, input_pin.name))
         self.history.record_command(lambda: self._add_connection(connection),
                                     lambda: self.delete_connection(connection))
@@ -168,7 +164,7 @@ class NodeManager(object):
 
         connection.delete()
 
-        self._logger.info("Deleted Connection: {}".format(connection))
+        logger.info("Deleted Connection: {}".format(connection))
 
         self.history.record_command(lambda: self.delete_connection(connection),
                                     lambda: self._add_connection(connection))
@@ -178,7 +174,7 @@ class NodeManager(object):
 
         :param connections: Connection objects
         """
-        with self.history.command_context("delete-connection-multiple"):
+        with self.history.aggregated_commend("delete-connection-multiple"):
             for connection in connections:
                 self.delete_connection(connection)
 
@@ -259,14 +255,14 @@ class NodeManager(object):
             param_info = self._hive_node_inspector.inspect_configured(reference_path, params)
 
         except Exception:
-            self._logger.error("Failed to inspect '{}'".format(reference_path))
+            logger.error("Failed to inspect '{}'".format(reference_path))
             raise
 
         try:
             node = self._hive_node_factory.new(name, reference_path, params, param_info)
 
         except Exception:
-            self._logger.error("Failed to instantiate '{}'".format(reference_path))
+            logger.error("Failed to instantiate '{}'".format(reference_path))
             raise
 
         self._add_node(node)
@@ -275,7 +271,7 @@ class NodeManager(object):
     def delete_node(self, node):
         """Remove node and its connections from the model
 
-        :param node: Node object
+        :param node: NodeWidget object
         """
         if node not in self.nodes.values():
             raise ValueError("Invalid node being deleted")
@@ -311,9 +307,9 @@ class NodeManager(object):
     def delete_nodes(self, nodes):
         """Remove multiple nodes and their connections from the model (as a composite operation)
 
-        :param nodes: Node objects
+        :param nodes: NodeWidget objects
         """
-        with self.history.command_context("delete-node-multiple"):
+        with self.history.aggregated_commend("delete-node-multiple"):
             for node in nodes:
                 try:
                     self.delete_node(node)
@@ -337,7 +333,7 @@ class NodeManager(object):
         self.delete_nodes(nodes_to_delete)
 
     def morph_node(self, node, params):
-        with self.history.command_context("morph-node"):
+        with self.history.aggregated_commend("morph-node"):
             # Record the connected target pins for each IO pin by name
             input_name_to_pins = {n: [c.output_pin for c in p.connections] for n, p in node.inputs.items()}
             output_name_to_pins = {n: [c.input_pin for c in p.connections] for n, p in node.outputs.items()}
@@ -431,7 +427,7 @@ class NodeManager(object):
     def rename_node(self, node, name, attempt_till_success=False):
         """Rename node with a new identifier
 
-        :param node: Node object
+        :param node: NodeWidget object
         :param name: new name of node
         :param attempt_till_success: if name is not available, find a valid name based upon it
         """
@@ -463,7 +459,7 @@ class NodeManager(object):
     def reposition_node(self, node, position):
         """Re-position node in the model
 
-        :param node: Node object
+        :param node: NodeWidget object
         :param position: new x, y position
         """
         old_position = node.position
@@ -494,7 +490,7 @@ class NodeManager(object):
 
         :param node_to_position: dictionary of node, position item pairs
         """
-        with self.history.command_context("reposition-multiple"):
+        with self.history.aggregated_commend("reposition-multiple"):
             for node, position in node_to_position.items():
                 self.reposition_node(node, position)
 
@@ -559,7 +555,7 @@ class NodeManager(object):
         return self._export_to_hivemap(docstring=self.docstring)
 
     def load_hivemap(self, hivemap):
-        with self.history.command_context("load"):
+        with self.history.aggregated_commend("load"):
             # Clear nodes first
             self.delete_all_nodes()
             data = self._import_from_hivemap(hivemap)
@@ -570,7 +566,7 @@ class NodeManager(object):
 
         :param nodes: nodes to cut
         """
-        with self.history.command_context("cut"):
+        with self.history.aggregated_commend("cut"):
             clipboard = self.copy(nodes)
 
             # Delete nodes
@@ -601,7 +597,7 @@ class NodeManager(object):
 
         :param position: position of target center of mass of nodes
         """
-        with self.history.command_context("paste"):
+        with self.history.aggregated_commend("paste"):
             data = self._import_from_hivemap(clipboard)
             node_map = data['nodes']
 
@@ -694,7 +690,7 @@ class NodeManager(object):
                     node = self._create_bee(reference_path, params)
 
                 except Exception as err:
-                    self._logger.exception("Unable to create bee node {}".format(spyder_node.identifier))
+                    logger.exception("Unable to create bee node {}".format(spyder_node.identifier))
                     continue
 
             else:
@@ -702,7 +698,7 @@ class NodeManager(object):
                     node = self._create_hive(reference_path, params)
 
                 except Exception as err:
-                    self._logger.exception("Unable to create hive node {}".format(spyder_node.identifier))
+                    logger.exception("Unable to create hive node {}".format(spyder_node.identifier))
                     continue
 
                 # Specific mapping for HIVE nodes only.
@@ -730,7 +726,7 @@ class NodeManager(object):
                 to_id = id_to_node_name[connection.to_node]
 
             except KeyError:
-                self._logger.error("Unable to find all nodes in connection: {}, {}".format(connection.from_node,
+                logger.error("Unable to find all nodes in connection: {}, {}".format(connection.from_node,
                                                                                            connection.to_node))
                 continue
 
@@ -742,7 +738,7 @@ class NodeManager(object):
                 to_pin = to_node.inputs[connection.input_name]
 
             except KeyError:
-                self._logger.error("Unable to find all node pins in connection: {}.{}, {}.{}"
+                logger.error("Unable to find all node pins in connection: {}.{}, {}.{}"
                                    .format(connection.from_node, connection.output_name, connection.to_node,
                                            connection.input_name))
                 continue
@@ -751,7 +747,7 @@ class NodeManager(object):
                 self.create_connection(from_pin, to_pin)
 
             except Exception:
-                self._logger.exception("Unable to create connection between {}.{}, {}.{}"
+                logger.exception("Unable to create connection between {}.{}, {}.{}"
                                        .format(connection.from_node, connection.output_name, connection.to_node,
                                                connection.input_name))
 
@@ -763,7 +759,7 @@ class NodeManager(object):
                     pin = node.inputs[pin_name]
 
                 except KeyError:
-                    self._logger.error("Couldn't find pin {}.{} to fold".format(node.name, pin_name))
+                    logger.error("Couldn't find pin {}.{} to fold".format(node.name, pin_name))
                     continue
 
                 self.fold_pin(pin)

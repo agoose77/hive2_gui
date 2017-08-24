@@ -8,7 +8,7 @@ from .enums import IOMode
 from .field import Field
 
 
-class NodeHeader(QGraphicsWidget):
+class NodeHeaderWidget(QGraphicsWidget):
     def __init__(self, name: str):
         super().__init__()
 
@@ -56,7 +56,7 @@ class NodeHeader(QGraphicsWidget):
         painter.drawPath(shape)
 
 
-class Node(QGraphicsWidget):
+class NodeWidget(QGraphicsWidget):
     def __init__(self, name: str):
         super().__init__()
 
@@ -64,7 +64,7 @@ class Node(QGraphicsWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-        header = NodeHeader(name)
+        header = NodeHeaderWidget(name)
         layout.addItem(header)
         layout.setStretchFactor(header, 1)
 
@@ -79,8 +79,11 @@ class Node(QGraphicsWidget):
         self._roundness = 2
 
     def addField(self, name: str, io_mode: IOMode) -> Field:
+        print("ADD F")
         field = Field(name, io_mode)
+        print("ADDED F")
         self.layout().addItem(field)
+        print("RET F")
         return field
 
     def fields(self):

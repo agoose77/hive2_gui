@@ -42,7 +42,7 @@ def dict_to_delimited(data, delimiter, name_path=()):
 
 
 class MainWindow(QMainWindow):
-    _projectNameTemplate = "Hive Node Editor - {}"
+    _projectNameTemplate = "Hive NodeWidget Editor - {}"
     _hivemapExtension = "hivemap"
     _untitledFileName = "<Unsaved>"
     _noProjectText = "<No Project>"
@@ -142,7 +142,7 @@ class MainWindow(QMainWindow):
 
         self.editMenu = QMenu("&Edit")
 
-        self.viewMenu = QMenu("&View")
+        self.viewMenu = QMenu("&NodeView")
         self.viewMenu.addAction(self._project_hives_window.toggleViewAction())
 
         self.runMenu = QMenu("&Run")
