@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "hivemap",
+  "type": "object",
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/node"
+      }
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/connection"
+      }
+    }
+  },
+  "required": [
+    "nodes"
+  ],
+  "definitions": {
+    "parameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/identifier"
+        },
+        "type": {
+          "$ref": "#/definitions/identifier"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "identifier": {
+      "type": "string",
+      "pattern": "^[^\\d\\W]\\w*\\Z"
+    },
+    "attribute": {
+      "type": "string",
+      "pattern": "^([^\\d\\W]\\w*)\\.([^\\d\\W]\\w*)\\Z"
+    },
+    "connection": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "$ref": "#/definitions/attribute"
+        },
+        "target": {
+          "$ref": "#/definitions/attribute"
+        }
+      }
+    },
+    "position": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ]
+    },
+    "node": {
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/identifier"
+        },
+        "data": {
+          "type": "object"
+        },
+        "position": {
+          "$ref": "#/definitions/position"
+        },
+        "folded_pins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/identifier"
+          }
+        }
+      },
+      "required": [
+        "name",
+        "position"
+      ]
+    }
+  }
+}
