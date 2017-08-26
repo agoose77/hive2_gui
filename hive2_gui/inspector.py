@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from hive import matchmaker_validation_enabled_as
+# from hive import matchmaker_validation_enabled_as
 from .utils import hive_import_from_path, get_bind_class_args
 
 

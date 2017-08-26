@@ -1,4 +1,4 @@
-from hive.typing import data_types_match, MatchFlags
+# from hive.typing import data_types_match, MatchFlags
 from enum import IntEnum
 
 

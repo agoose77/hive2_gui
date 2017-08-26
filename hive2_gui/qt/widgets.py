@@ -4,7 +4,7 @@ from sys import float_info
 from PyQt5.QtWidgets import QSpinBox, QLineEdit, QDoubleSpinBox, QWidget, QHBoxLayout, QCheckBox, QComboBox, QToolButton
 from PyQt5.QtGui import QColor, QIcon, QPixmap
 
-from hive import data_types_match, MatchFlags
+# from hive import data_types_match, MatchFlags
 from .colour_button import ColorButton
 from .code_editor import CodeEditor
 from .key_selector import QKeySelector

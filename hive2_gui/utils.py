@@ -1,6 +1,6 @@
 import ast
-import hive
-from hive.interfaces import Antenna, Output, TriggerSource, TriggerTarget, IOModes
+# import hive
+# from hive.interfaces import Antenna, Output, TriggerSource, TriggerTarget, IOModes
 # IO public
 
 

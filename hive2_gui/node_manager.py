@@ -6,12 +6,12 @@ from .connection import Connection, ConnectionType
 from .factory import BeeNodeFactory, HiveNodeFactory
 from .history import CommandLogManager
 from .inspector import HiveNodeInspector, BeeNodeInspector
-from .models import model
+from . import models
 from .node import FOLD_NODE_REFERENCE_PATH, NodeTypes
 from .observer import Observable
 from .utils import start_value_from_type, is_identifier, camelcase_to_underscores
 
-from hive import validate_external_name
+# from hive import validate_external_name
 
 
 # TODO node manager should just be a controller over a "hivemap" model
@@ -245,7 +245,6 @@ class NodeManager:
 
     def _create_hive(self, reference_path, params=None):
         """Create a hive node with the given path"""
-        print("CREATE", reference_path)
         if params is None:
             params = {}
 

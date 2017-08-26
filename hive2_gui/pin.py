@@ -1,4 +1,4 @@
-from hive.typing import data_types_match, MatchFlags
+# from hive.typing import data_types_match, MatchFlags
 from .data_views import ListView
 from .protected_container import ProtectedContainer, RestrictedAttribute
 from .sockets import get_colour, get_shape
