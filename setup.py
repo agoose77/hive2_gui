@@ -12,5 +12,5 @@ setup(name='hive2_gui',
 
       # Project uses reStructuredText, so ensure that the docutils get
       # installed or upgraded on the target machine
-      install_requires=['PyQt5', 'pygments', 'qdarkstyle', 'hive2'],
+      install_requires=['PyQt5', 'pygments', 'qdarkstyle', 'hive2', 'python_jsonschema_objects', 'pytest'],
 )

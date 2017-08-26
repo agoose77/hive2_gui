@@ -3,3 +3,4 @@ pygments
 hive2
 qdarkstyle
 pytest
+python_jsonschema_objects
